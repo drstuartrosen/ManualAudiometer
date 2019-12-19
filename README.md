@@ -12,4 +12,4 @@ Download this directory and then execute audiometer.m
 Matlab must be installed to run this program, but it could be compiled to allow its use in the absence of Matlab.
 
 ## Authors
-* **Stuart Rosen** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Stuart Rosen** with contributions from Katharina Zenke & Shiran Koifman
