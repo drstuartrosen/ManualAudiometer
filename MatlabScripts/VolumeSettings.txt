@@ -1,0 +1,9 @@
+W7 0.9 0.9 0.0 0.0
+
+type = 'baby' or 'W7' or 'XP'
+SoundMasterLevel
+SoundWaveLevel
+(The last 2 values have no effect in this program)
+if OutRMS>0, all output waves scaled to constant rms
+if OutRMS=0 & InRMS>0, noise level is maintained constant
+
