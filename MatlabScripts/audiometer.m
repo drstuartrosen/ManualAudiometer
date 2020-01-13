@@ -83,6 +83,11 @@
 %           only with the format of the information different.
 %
 %%-------------------------------------------------------------------------
+% Vs 4.7 January 2020
+%   replace xlsread() for compatibility across platforms
+%   implement volume controls for the Mac
+%   correct long play error
+%
 % Vs 4.6 December 2019
 %   Document better
 %   Add a lot more defaults so less needs to be specified in
@@ -184,28 +189,37 @@ if nargin == 0  % LAUNCH GUI
     %% get controlling parameters
     AudiometerConditionsFile = 'AudiometerConditions.csv';
     if exist(AudiometerConditionsFile,'file')
-        [~, strText, allText] = xlsread(AudiometerConditionsFile);
+        % [~, strText, allText] = xlsread(AudiometerConditionsFile);
+        AudioTable = readcell(AudiometerConditionsFile);
     else
         close(fig)
         close(OddWarning)
         error('Audiometer Conditions File does not exist: %s\n', AudiometerConditionsFile);
     end
-    for i=1:size(allText,2)
-        if ~isempty(strText{2,i})
-            eval([allText{1,i} '= ''' allText{2,i} ''';'])
+    for i=1:size(AudioTable,2)
+        if ischar(AudioTable{2,i})
+            eval([AudioTable{1,i} '= ''' AudioTable{2,i} ''';'])
         else
-            eval([allText{1,i} '=' num2str(allText{2,i}) ';'])
+            eval([AudioTable{1,i} '=' num2str(AudioTable{2,i}) ';'])
         end
     end
     
-    soundOptions={'PC' 'RME'};
-    soundOption=soundOptions{usePlayrec+1};
+    if ispc
+        soundOptions={'PC' 'RME'};
+        soundOption=soundOptions{usePlayrec+1};
+    elseif ismac
+        soundOptions={'MAC' 'RME'};
+        soundOption=soundOptions{usePlayrec+1};        
+    else
+       error('Computer must be Must be Windows PC or Mac');
+    end
+    
     if strcmp(correctionType(1:3),'SPL')
         responseFile=strrep(HeadphoneTypeFile,'.csv','');
     else
         responseFile=strrep(FPLmat,'.mat','');
     end
-    
+        
     handles.ListenerName = [handles.I, '_', handles.DOB,'_', handles.sex];
     %% get start time and date
     StartTime=fix(clock);
@@ -314,11 +328,16 @@ if nargin == 0  % LAUNCH GUI
     end
     
     %% Settings for level -- set sound card to get maximum level required at 250 Hz
-    if ~handles.usePlayrec
-        SetLevels(VolumeSettingsFile);
-    else
+    if ispc
+        if ~handles.usePlayrec
+            SetLevels(VolumeSettingsFile);
+        else
+        end
+    elseif ismac
+        !osascript set_volume_applescript.scpt
+        % VolumeSettingsFile='VolumeSettingsMac.txt';
     end
-    
+      
     %% make invisible the levels that are not necessary
     handles.tweak = maxLevel;
     if ~(70>=minLevel && 70<=maxLevel)
