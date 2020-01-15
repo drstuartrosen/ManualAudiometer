@@ -36,7 +36,7 @@
 %               the duration of each pulse in the set, even if only 1
 %             nPulsePause 200
 %               the ISI between pulses
-%             longDuration	8
+%             longDuration	3
 %               the duration of the tone played when the 'Long Play' button
 %               is pressed
 %             FPLmat2	Flat115_L_computedFPLestimates_Ch1.mat
@@ -184,7 +184,7 @@ if nargin == 0  % LAUNCH GUI
     end
     
     [handles.I, handles.DOB, handles.sex] = ListenerIDv2('x');
-    handles.version = '4.6';
+    handles.version = '4.7';
     
     %% get controlling parameters
     AudiometerConditionsFile = 'AudiometerConditions.csv';
@@ -264,7 +264,7 @@ if nargin == 0  % LAUNCH GUI
     handles.nPulsePause=nPulsePause;
     
     if ~exist('longDuration', 'var')
-        longDuration=8; % 8 seconds
+        longDuration=3000; % 3 seconds
     end
     handles.longDuration=longDuration;
     
@@ -823,8 +823,8 @@ function pushbuttonLongPlay_Callback(h, eventdata, handles)
 set(handles.text9,'String',handles.tone);
 set(handles.text9,'Visible','On');
 % Select correction dependent on channel
-currentDuration=handles.dur;
-handles.dur=handles.longDuration;
+currentDuration=handles.nPulseDuration;
+handles.nPulseDuration=handles.longDuration;
 currentNumPulses=handles.numPulses;
 handles.numPulses=1;
 playback(handles)
