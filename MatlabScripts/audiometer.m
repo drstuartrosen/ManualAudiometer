@@ -83,6 +83,9 @@
 %           only with the format of the information different.
 %
 %%-------------------------------------------------------------------------
+% Vs 4.8 January 2020
+% substitute readtable() for readcell(): Matlab version problem
+%
 % Vs 4.7 January 2020
 %   replace xlsread() for compatibility across platforms
 %   implement volume controls for the Mac
@@ -184,13 +187,16 @@ if nargin == 0  % LAUNCH GUI
     end
     
     [handles.I, handles.DOB, handles.sex] = ListenerIDv2('x');
-    handles.version = '4.7';
+    handles.version = '4.8';
     
     %% get controlling parameters
     AudiometerConditionsFile = 'AudiometerConditions.csv';
     if exist(AudiometerConditionsFile,'file')
         % [~, strText, allText] = xlsread(AudiometerConditionsFile);
-        AudioTable = readcell(AudiometerConditionsFile);
+        % AudioTable = readcell(AudiometerConditionsFile); % for Matlab R2019a
+        T=readtable(AudiometerConditionsFile);
+        X=table2cell(T);
+        AudioTable=[T.Properties.VariableNames;X];
     else
         close(fig)
         close(OddWarning)
