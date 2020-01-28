@@ -20,7 +20,16 @@ function [InRMS, OutRMS] = SetLevels(VolumeSettingsFile)
 %% Settings for level
 % ensure the file is avilable
 if exist(VolumeSettingsFile,'file')
-    [SoundCard, SoundMasterLevel,SoundWaveLevel,InRMS,OutRMS]=textread(VolumeSettingsFile,'%s %f %f %f %f',1);
+    %% textread is deprecated
+    % [SoundCard, SoundMasterLevel,SoundWaveLevel,InRMS,OutRMS]=textread(VolumeSettingsFile,'%s %f %f %f %f',1);
+    %% use textscan instead
+    VSF=fopen(VolumeSettingsFile,'rt');
+    VSinfo=textscan(VSF,'%s %f %f %f %f',1);
+    SoundCard=VSinfo{1};
+    SoundMasterLevel=VSinfo{2};
+    SoundWaveLevel=VSinfo{3};
+    InRMS=VSinfo{4};
+    OutRMS=VSinfo{5};
 else
     FileMissingErrorMessage=sprintf('Missing file: %s does not exist', VolumeSettingsFile);
     h=msgbox(FileMissingErrorMessage, 'Missing file', 'error', 'modal'); uiwait(h);
@@ -31,7 +40,7 @@ end
 if strcmp(SoundCard, 'baby')  % need CoreAudioApi.dll for Windows 7 & Vista
     sendRMEmessage(0,7,SoundMasterLevel);
     SetMatlabVolume(SoundWaveLevel);
-elseif strcmp(SoundCard, 'W7') % this is not Windows XP
+elseif strcmp(SoundCard, 'W7') || strcmp(SoundCard, 'W10') % this is not Windows XP
     system(sprintf('SetWindowsVolume.exe %f',SoundMasterLevel));
     SetMatlabVolume(SoundWaveLevel);
 elseif strcmp(SoundCard, 'XP') % Windows XP
