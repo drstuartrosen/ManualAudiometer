@@ -1,0 +1,7 @@
+Setting all values to 0 so as to use maximum dynamic range at 70 dB HL:
+
+-40 dB = 30 dB HL: waveform has very little distortion, everything >60 dB down: -.01 +.01
+-50 dB = 20 dB HL: waveform has very little distortion, everything >60 dB down: -.003 +.003
+-60 dB = 10 dB HL: waveform has very little distortion, everything >57 dB down: -.001 +.001
+-70 dB =  0 dB HL: waveform has distortion, but everything >40 dB down: -.0003 +.0003
+Surprising, as these are only 16 BitsPerSample
