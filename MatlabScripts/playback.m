@@ -1,5 +1,7 @@
 function playback(g)
 
+% Vs 3.0 - January 202
+%	allow current waves to be stored
 % Vs 2.5 - April 2019
 %   catch errors when stimulus level specified cannot be reached
 % Vs 2.0 - April 2019
@@ -96,5 +98,11 @@ elseif g.usePlayrec == 0
 else
     error('value of usePlayrec must be 0 or 1');
 end
+
+% save wav files if CurrentWavOut is on (==1)
+if g.CurrentWavOut
+    audiowrite('CurrentWave.wav', y, fs);
+end
+
 % pause(1.5)
 
