@@ -41,6 +41,11 @@
 %               is pressed
 %             FPLmat2	Flat115_L_computedFPLestimates_Ch1.mat
 %             FPLmat	KZ_L_computedFPLestimates_Ch1.mat
+%             xtraAtt 0 
+%               Only used for correctionType=SPL, and is an additional
+%               overall attenuation applied to all attenuations. This is an
+%               easy way to get more attenuation overall without chaning
+%               all the numbers in the headphone file
 %
 %       For correctionType=SPL
 %       The HeadphoneTypeFile contains the attenuations necessary to obtain
@@ -57,6 +62,17 @@
 %               2000	-18.8
 %               4000	-15.6
 %               8000	-13.3
+%
+%       More specifically, consider DD450 headphones which have the
+%       subset of RETSPLs in the table below. If maxLevel=50, then for the
+%       specified volume settings, selecting 50 dB HL should result in the
+%       levels in the third column:
+%               freq	RETSPL measured
+%                500   11.0      61.0
+%               1000	5.5      55.5
+%               2000	4.5	     54.5
+%               4000	9.5	     59.5
+%
 %       The tweaks file has 2 columns, additional adjustments to make for
 %       a particular pair of headphones on each side:
 %           freq	HD-25 left	HD-25 right
@@ -83,6 +99,13 @@
 %           only with the format of the information different.
 %
 %%-------------------------------------------------------------------------
+% Vs 5.0 January 2020
+%   parameter xtraAtten added
+%   eliminate norming of headphone attenuation values in SPL option
+%   I'm not sure why that was done in the first place, and it is confusing!
+%   Allow output wave to be saved as CurrentWave.wav by setting an
+%   appropriate flag just below, CurrentWavOut
+%
 % Vs 4.8 January 2020
 % substitute readtable() for readcell(): Matlab version problem
 %
@@ -177,6 +200,7 @@ if nargin == 0  % LAUNCH GUI
         'the tone is being played'},'Obs!', 'modal');
     
     %% important variables to set
+    handles.CurrentWavOut=0; % output wav file of played wave on every trial
     handles.audiometricFreqs = [250 500 1000 2000 4000 8000 11000 16000 20000];
     OutputDir = 'results';
     if ~exist(OutputDir, 'dir')
@@ -278,11 +302,17 @@ if nargin == 0  % LAUNCH GUI
         error('correctionType must be specified in AudiometerConditions file')
     end
     handles.correctionType=correctionType; % SPL or FPL
+    
     handles.minLevel=minLevel;
     handles.maxLevel=maxLevel;
     if ~exist('VolumeSettingsFile', 'var')
         VolumeSettingsFile="VolumeSettings.txt";
     end
+    
+    if ~exist('xtraAtt', 'var')
+        xtraAtt=0;
+    end
+    handles.xtraAtt=xtraAtt;    
     
     set(handles.textParameters, 'String', sprintf('%s %s: %d pulse(s)',...
         correctionType, soundOption, numPulses));
@@ -302,7 +332,7 @@ if nargin == 0  % LAUNCH GUI
         % get in the dB SPL generated at the maximum output level
         handles.maxSPLs = csvread(HeadphoneTypeFile,1,0);
     else
-        %% get in the typical voltage corrections (in dB) needed for a
+        %% get in the typical corrections (in dB) needed for a
         %  particular headphone type, and interpolate to audiometric frequencies
         handles.SPLFile = HeadphoneTypeFile;
         M = csvread(HeadphoneTypeFile,1,0);
@@ -314,19 +344,24 @@ if nargin == 0  % LAUNCH GUI
         twksLeft = interp1(M(:,1), M(:,2),handles.audiometricFreqs);
         twksRight = interp1(M(:,1), M(:,3),handles.audiometricFreqs);
         
-        %% add together the two sets of adjustments, and convert to linear factors
+        %% add together the two sets of adjustments, also accounting for the
+        % extra attenution parameter 
         % Left Channel
-        MLeft = twksLeft + dBVolts;
-        maxLeft = max(MLeft);
+        MLeft = twksLeft + dBVolts + xtraAtt;
+        % maxLeft = max(MLeft);
         % Right Channel
-        MRight = twksRight + dBVolts;
-        maxRight = max(MRight);
+        MRight = twksRight + dBVolts + xtraAtt;
+        % maxRight = max(MRight);
         % Find max of both channels
-        maxOverall = min(maxLeft, maxRight);
+        % maxOverall = min(maxLeft, maxRight);
         
+        %% Eliminated after Vs 4.9
         % Adjust values for left and right with largest value 0dB
-        handles.adjLeft = (MLeft-maxOverall);
-        handles.adjRight = (MRight-maxOverall);
+        % handles.adjLeft = (MLeft-maxOverall);
+        % handles.adjRight = (MRight-maxOverall);
+        %% But still need these variables! Consider re-writing this!
+        handles.adjLeft = (MLeft);
+        handles.adjRight = (MRight);        
         
         % maximum level in dB HL - GUI will only display pushbuttons
         % <= this level
